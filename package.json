@@ -301,7 +301,7 @@
     "yocto-queue": "^0.1.0"
   },
   "scripts": {
-    "test": "jest",
+    "test": "{jest mocha --exit]",
     "start": "nodemon server.js"
   },
   "jest": {
