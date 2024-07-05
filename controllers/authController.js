@@ -1,16 +1,22 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User, Organisation } = require('../models');
+const { User, Organisation, sequelize } = require('../models');
 const config = require('../config/config');
 
 exports.register = async (req, res) => {
     const { firstName, lastName, email, password, phone } = req.body;
 
     try {
+    // Log the incoming registration data
+    console.log('Register request received with data:', req.body);
+
         // Hash the password before saving
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user and organisation in transactions for consistency
+    // Log the hashed password
+    console.log('Hashed password:', hashedPassword);
+
+        // Create user and organisation in transactions
         await sequelize.transaction(async (t) => {
             const user = await User.create({
                 userId: `user-${Date.now()}`,
@@ -21,18 +27,27 @@ exports.register = async (req, res) => {
                 phone,
             }, { transaction: t });
 
+console.log('User created:', user);
+
             const org = await Organisation.create({
                 orgId: `org-${Date.now()}`,
                 name: `${firstName}'s Organisation`,
                 description: '',
             }, { transaction: t });
 
+console.log('Organisation created:', org);
+
             await user.addOrganisation(org, { transaction: t });
+
+      console.log('User added to Organisation
 
             // Generate JWT token
             const token = jwt.sign({ userId: user.userId }, config.JWT_SECRET, {
                 expiresIn: config.JWT_EXPIRES_IN,
             });
+
+// Log the generated token
+      console.log('JWT token generated:', token);
 
             // Respond with success message and token
             res.status(201).json({
